@@ -10,6 +10,8 @@ st.dataframe(df)
 # Group by the 'equipo' column
 grouped_equipo_df = df.groupby('equipo').sum()  # or any other aggregation function
 
+st.dataframe(grouped_equipo_df)
+
 # Create a plot
 fig, ax = plt.subplots()
 grouped_equipo_df.plot(kind='bar', ax=ax)
