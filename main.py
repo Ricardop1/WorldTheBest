@@ -5,7 +5,7 @@ st.title('WORLD THE BEST')
 
 df = pd.read_csv("./thebest.csv")
 
-
+st.dataframe(df)
 # Group by the 'equipo' column
 grouped_equipo_df = df.groupby('equipo').sum()  # or any other aggregation function
 
