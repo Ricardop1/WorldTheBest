@@ -53,10 +53,15 @@ with col1:
             "Victorisd",
             format="%d 🏆",
         )
-    },)
+    })
     st.plotly_chart(fig_equipo)
 with col2:
-    st.dataframe(entrenador_counts, hide_index = True,use_container_width=True)
+    st.dataframe(entrenador_counts, hide_index = True,use_container_width=True,column_config={
+        "victories": st.column_config.NumberColumn(
+            "Victorisd",
+            format="%d 🏆",
+        )
+    })
     st.plotly_chart(fig_entrenador)
 
 
