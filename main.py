@@ -24,7 +24,6 @@ def dataframe_with_selections(df):
 df = pd.read_csv('./thebest.csv')
 df_teams = pd.read_csv('./teams.csv')
 
-st.dataframe(df, hide_index = True)
 # Group by 'equipo' to count victories per team
 equipo_counts = df['equipo'].value_counts().reset_index()
 equipo_counts.columns = ['equipo', 'victories']
