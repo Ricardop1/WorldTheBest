@@ -59,3 +59,7 @@ with col2:
 selection = dataframe_with_selections(df_teams.head(10))
 st.write("Your selection:")
 st.write(selection)
+
+if selection:
+    st.write("El ganador es:")
+    st.write(selection.sample().astype("object"))
