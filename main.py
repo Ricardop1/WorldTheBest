@@ -48,7 +48,12 @@ st.title('Team and Coach Victory Analysis')
 col1, col2= st.columns(2)
 
 with col1:
-    st.dataframe(equipo_counts, hide_index = True,use_container_width=True)
+    st.dataframe(equipo_counts, hide_index = True,use_container_width=True, column_config={
+        "victories": st.column_config.NumberColumn(
+            "Victorisd",
+            format="%d 🏆",
+        )
+    },)
     st.plotly_chart(fig_equipo)
 with col2:
     st.dataframe(entrenador_counts, hide_index = True,use_container_width=True)
