@@ -24,7 +24,7 @@ def dataframe_with_selections(df):
 df = pd.read_csv('./thebest.csv')
 df_teams = pd.read_csv('./teams.csv')
 
-st.dataframe(df)
+st.dataframe(df, hide_index = True)
 # Group by 'equipo' to count victories per team
 equipo_counts = df['equipo'].value_counts().reset_index()
 equipo_counts.columns = ['equipo', 'victories']
@@ -34,20 +34,26 @@ entrenador_counts = df['entrenador'].value_counts().reset_index()
 entrenador_counts.columns = ['entrenador', 'victories']
 
 # Create a plotly bar plot for equipo
-st.dataframe(equipo_counts)
+
 fig_equipo = px.bar(equipo_counts, x='equipo', y='victories', 
                     title='Victories by Team', labels={'equipo': 'Team', 'victories': 'Number of Victories'})
 
 
-st.dataframe(entrenador_counts)
+
 # Create a plotly bar plot for entrenador
 fig_entrenador = px.bar(entrenador_counts, x='entrenador', y='victories', 
                         title='Victories by Coach', labels={'entrenador': 'Coach', 'victories': 'Number of Victories'})
 
 # Use Streamlit to display the plots
 st.title('Team and Coach Victory Analysis')
-st.plotly_chart(fig_equipo)
-st.plotly_chart(fig_entrenador)
+col1, col2= st.columns(2)
+
+with col1:
+    st.dataframe(equipo_counts, hide_index = True)
+    st.plotly_chart(fig_equipo)
+with col2:
+    st.dataframe(entrenador_counts, hide_index = True)
+    st.plotly_chart(fig_entrenador)
 
 
 selection = dataframe_with_selections(df_teams.head(10))
