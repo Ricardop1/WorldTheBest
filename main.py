@@ -60,6 +60,6 @@ selection = dataframe_with_selections(df_teams.head(10))
 st.write("Your selection:")
 st.write(selection)
 
-if not selection.empty:
+if not selection.empty and st.button("SORTEAR"):
     st.write("El ganador es:")
     st.write(selection.sample().astype("object"))
