@@ -64,21 +64,25 @@ with col2:
     })
     st.plotly_chart(fig_entrenador)
 
-# Grouping by 'edition' and 'entrenador'
-time_series_data = df.groupby(['edicion', 'entrenador']).size().reset_index(name='victories')
+# Grouping by 'edition' and 'entrenador' to calculate cumulative victories
+df['cumulative_victories'] = df.groupby('entrenador').cumcount() + 1
+
+# Group by 'edition' and 'entrenador' and sum the victories
+cumulative_victories = df.groupby(['edicion', 'entrenador']).size().groupby(level=1).cumsum().reset_index(name='victories')
 
 # Creating the time series plot
 fig_time_series = px.line(
-    time_series_data,
+    cumulative_victories,
     x='edicion',
     y='victories',
     color='entrenador',
-    title='Victories by Coach for Each Edition',
+    title='Cumulative Victories by Coach for Each Edition',
     markers=True
 )
 
 # Display time series plot
 st.plotly_chart(fig_time_series)
+
 
 selection = dataframe_with_selections(df_teams.head(10))
 st.write("Your selection:")
