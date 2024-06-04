@@ -64,6 +64,15 @@ with col2:
     })
     st.plotly_chart(fig_entrenador)
 
+# Grouping by 'edition' and 'entrenador'
+time_series_data = df.groupby(['edicion', 'entrenador']).size().reset_index(name='victories')
+
+# Creating the time series plot
+fig_time_series = px.line(time_series_data, x='edition', y='victories', color='entrenador', title='Victories by Coach Over Time')
+
+# Streamlit display
+st.plotly_chart(fig_time_series)
+
 
 selection = dataframe_with_selections(df_teams.head(10))
 st.write("Your selection:")
