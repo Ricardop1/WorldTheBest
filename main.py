@@ -68,11 +68,17 @@ with col2:
 time_series_data = df.groupby(['edicion', 'entrenador']).size().reset_index(name='victories')
 
 # Creating the time series plot
-fig_time_series = px.line(time_series_data, x='edition', y='victories', color='entrenador', title='Victories by Coach Over Time')
+fig_time_series = px.line(
+    time_series_data,
+    x='edicion',
+    y='victories',
+    color='entrenador',
+    title='Victories by Coach for Each Edition',
+    markers=True
+)
 
-# Streamlit display
+# Display time series plot
 st.plotly_chart(fig_time_series)
-
 
 selection = dataframe_with_selections(df_teams.head(10))
 st.write("Your selection:")
