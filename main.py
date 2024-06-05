@@ -54,7 +54,7 @@ with col1:
             format="%d 🏆",
         )
     })
-    st.plotly_chart(fig_equipo)
+    
 with col2:
     st.dataframe(entrenador_counts, hide_index = True,use_container_width=True,column_config={
         "victories": st.column_config.NumberColumn(
@@ -62,6 +62,13 @@ with col2:
             format="%d 🏆",
         )
     })
+    
+
+col3, col4= st.columns(2)
+with col3:
+    st.plotly_chart(fig_equipo)
+
+with col4:
     st.plotly_chart(fig_entrenador)
 
 # Grouping by 'edition' and 'entrenador' to calculate cumulative victories
@@ -82,6 +89,29 @@ fig_time_series = px.line(
 
 # Display time series plot
 st.plotly_chart(fig_time_series)
+
+
+
+
+# Grouping by 'edition' and 'entrenador' to count victories
+victory_counts = df.groupby(['edicion', 'entrenador']).size().reset_index(name='victories')
+
+# Create a dataframe for cumulative sum
+victory_counts['cumulative_victories'] = victory_counts.groupby('entrenador')['victories'].cumsum()
+
+# Creating the cumulative time series plot
+fig_time_series = px.line(
+    victory_counts,
+    x='edition',
+    y='cumulative_victories',
+    color='entrenador',
+    title='Cumulative Victories by Coach for Each Edition',
+    markers=True
+)
+
+# Display cumulative time series plot
+st.plotly_chart(fig_time_series)
+
 
 
 selection = dataframe_with_selections(df_teams.head(10))
