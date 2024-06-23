@@ -31,7 +31,7 @@ df = pd.read_csv('./thebest.csv')
 df_teams = pd.read_csv('./teams.csv')
 df_team_coach = pd.read_csv('./team_coach.csv')
 
-df["entrenador"] = df.apply(lambda x: check_coach(x.equipo) if x.entrenador == "fifa" else x.entrenador, index=False)
+df["entrenador"] = df.apply(lambda x: check_coach(x.equipo) if x.entrenador == "fifa" else x.entrenador, axis=1)
 
 # Group by 'equipo' to count victories per team
 equipo_counts = df['equipo'].value_counts().reset_index()
