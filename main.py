@@ -20,13 +20,23 @@ def dataframe_with_selections(df):
     return selected_rows.drop('Select', axis=1)
 
 
+def check_coach(team_name, df_coaches):
+
+    coach_name = df_coaches[df_coaches["df_coaches"] == team_name].values.tolist()
+    return coach_name[0] if coach_name else "fifa"
+
+################################### 
 # Load the data into a pandas DataFrame
 df = pd.read_csv('./thebest.csv')
 df_teams = pd.read_csv('./teams.csv')
+df_team_coach = pd.read_csv('./team_coach.csv')
+
+df["entrenador"] = df.apply(lambda x: check_coach(x.equipo) if x.entrenador == "fifa" else x.entrenador, index=False)
 
 # Group by 'equipo' to count victories per team
 equipo_counts = df['equipo'].value_counts().reset_index()
 equipo_counts.columns = ['equipo', 'victories']
+
 
 # Group by 'entrenador' to count victories per coach
 entrenador_counts = df['entrenador'].value_counts().reset_index()
