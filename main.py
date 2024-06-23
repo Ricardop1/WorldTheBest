@@ -22,7 +22,7 @@ def dataframe_with_selections(df):
 
 def check_coach(team_name, df_coaches):
 
-    coach_name = df_coaches[df_coaches["df_coaches"] == team_name].values.tolist()
+    coach_name = df_coaches[df_coaches["team_name"] == team_name].values.tolist()
     return coach_name[0] if coach_name else "fifa"
 
 ################################### 
