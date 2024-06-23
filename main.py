@@ -98,8 +98,8 @@ st.plotly_chart(fig_time_series)
 
 # Creating the cumulative time series plot
 # fig_time_series =px.line(df, x="edicion", y="cumulative_victories", color="entrenador",
-              title="Evolution of Coach Victories per Edition",
-              labels={"edicion": "Edition", "cumulative_victories": "Cumulative Victories"})
+#              title="Evolution of Coach Victories per Edition",
+#              labels={"edicion": "Edition", "cumulative_victories": "Cumulative Victories"})
 
 
 
