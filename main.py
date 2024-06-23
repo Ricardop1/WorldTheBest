@@ -94,17 +94,17 @@ st.plotly_chart(fig_time_series)
 
 
 # Grouping by 'edition' and 'entrenador' to count victories
-df['cumulative_victories_2'] = df.groupby('entrenador').cumcount() + 1
+# df['cumulative_victories_2'] = df.groupby('entrenador').cumcount() + 1
 
 # Creating the cumulative time series plot
-fig_time_series =px.line(df, x="edicion", y="cumulative_victories", color="entrenador",
+# fig_time_series =px.line(df, x="edicion", y="cumulative_victories", color="entrenador",
               title="Evolution of Coach Victories per Edition",
               labels={"edicion": "Edition", "cumulative_victories": "Cumulative Victories"})
 
 
 
 # Display cumulative time series plot
-st.plotly_chart(fig_time_series)
+# st.plotly_chart(fig_time_series)
 
 
 
