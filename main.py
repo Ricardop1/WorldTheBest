@@ -102,7 +102,7 @@ victory_counts['cumulative_victories'] = victory_counts.groupby('entrenador')['v
 # Creating the cumulative time series plot
 fig_time_series = px.line(
     victory_counts,
-    x='edition',
+    x='edicion',
     y='cumulative_victories',
     color='entrenador',
     title='Cumulative Victories by Coach for Each Edition',
