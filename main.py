@@ -33,8 +33,6 @@ df_team_coach = pd.read_csv('./team_coach.csv')
 
 df["entrenador"] = df.apply(lambda x: check_coach(x.equipo,df_team_coach) if x.entrenador == "fifa" else x.entrenador, axis=1)
 
-st.dataframe(df)
-
 # Group by 'equipo' to count victories per team
 equipo_counts = df['equipo'].value_counts().reset_index()
 equipo_counts.columns = ['equipo', 'victories']
