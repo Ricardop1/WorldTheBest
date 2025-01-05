@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar for teams grouped by league -->
+        <aside class="sidebar">
+            <h2>Participating Teams</h2>
+            {% for league, teams in teams_by_league.items() %}
+            <div class="league-group">
+                <h3>
+                    {{ league }}
+                    <button class="select-button" onclick="selectTeam('{{ league }}')">Draw Team</button>
+                </h3>
+                <ul id="league-{{ league }}" class="league-list">
+                    {% for team in teams %}
+                    <li>{{ team }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <header>
+                <h1>World The Best</h1>
+            </header>
+
+            <section class="tables">
+                <div class="table-container">
+                    <h2>Victories by Team</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Victories</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in equipo_counts %}
+                            <tr>
+                                <td>{{ row['equipo'] }}</td>
+                                <td>{{ row['victories'] }} 🏆</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <h2>Victories by Coach</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Coach</th>
+                                <th>Victories</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in entrenador_counts %}
+                            <tr>
+                                <td>{{ row['entrenador'] }}</td>
+                                <td>{{ row['victories'] }} 🏆</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="chart">
+                <h2>Cumulative Victories by Coach</h2>
+                <canvas id="cumulativeChart"></canvas>
+            </section>
+        </main>
+    </div>
+    <script>
+        // Function to select a random team from a league
+        async function selectTeam(league) {
+            try {
+                const response = await fetch('/select-team', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ league })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.team) {
+                    alert(`⭐⭐Selected Team: ${data.team}⭐⭐`);
+                    // Highlight the selected team
+                    const leagueList = document.getElementById(`league-${league}`);
+                    const items = leagueList.querySelectorAll('li');
+                    items.forEach(item => {
+                        item.classList.remove('highlight');
+                        if (item.textContent === data.team) {
+                            item.classList.add('highlight');
+                        }
+                    });
+                } else {
+                    alert(data.error || 'Could not select a team.');
+                }
+            } catch (error) {
+                alert('Error selecting a team. Please try again.');
+            }
+        }
+    </script>
+    <script>
+        // Data passed from Flask
+        const cumulativeVictoriesData = {{ cumulative_victories | tojson }};
+        
+        // Process data for Chart.js
+        const labels = [...new Set(cumulativeVictoriesData.map(item => item.edicion))].sort((a, b) => a - b);
+        const datasets = [];
+
+        const coaches = [...new Set(cumulativeVictoriesData.map(item => item.entrenador))];
+        coaches.forEach(coach => {
+            const coachData = cumulativeVictoriesData.filter(item => item.entrenador === coach);
+            datasets.push({
+                label: coach,
+                data: labels.map(label => {
+                    const match = coachData.find(item => item.edicion === label);
+                    return match ? match.cumulative_victories : 0;
+                }),
+                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                backgroundColor: `hsl(${Math.random() * 360}, 70%, 70%)`,
+                fill: false,
+                tension: 0.3
+            });
+        });
+
+        // Render Chart.js chart
+        const ctx = document.getElementById('cumulativeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#fff'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        color: '#fff',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#fff'
+                        },
+                        grid: {
+                            color: '#444'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#fff'
+                        },
+                        grid: {
+                            color: '#444'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

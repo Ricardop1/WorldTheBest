@@ -1,0 +1,232 @@
+/* General body styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Dashboard container */
+.dashboard {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 20%;
+    background-color: #1e1e1e;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    height: 100vh;
+}
+
+.sidebar h2 {
+    color: #f39c12;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.league-group {
+    margin-bottom: 20px;
+}
+
+.league-group h3 {
+    margin-bottom: 10px;
+    color: #f39c12;
+    font-size: 18px;
+}
+
+.league-group ul {
+    list-style: none;
+    padding: 0;
+}
+
+.league-group li {
+    padding: 8px;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.league-group li:hover {
+    background-color: #333;
+}
+
+/* Main content styles */
+.main-content {
+    width: 80%;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Header styles */
+header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #444;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 28px;
+    color: #f39c12;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Table container styles */
+.tables {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.table-container {
+    flex: 1;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    overflow-x: auto;
+}
+
+.table-container h2 {
+    margin-top: 0;
+    color: #f39c12;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    border: 1px solid #444;
+    padding: 8px 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #333;
+    color: #f39c12;
+    font-weight: bold;
+}
+
+table td {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+table tr:nth-child(even) td {
+    background-color: #2a2a2a;
+}
+
+/* Chart container styles */
+.chart {
+    text-align: center;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
+
+.chart h2 {
+    color: #f39c12;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.chart canvas {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+/* League group styles */
+.league-group h3 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #f39c12;
+}
+
+.league-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.league-group li {
+    padding: 8px;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.league-group li:hover {
+    background-color: #333;
+}
+
+.league-group li.highlight {
+    background-color: #f39c12;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Button styles */
+.select-button {
+    padding: 5px 10px;
+    background-color: #f39c12;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.select-button:hover {
+    background-color: #d37f0c;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        width: 100%;
+    }
+
+    .tables {
+        flex-direction: column;
+    }
+
+    .table-container {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
