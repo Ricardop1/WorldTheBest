@@ -302,9 +302,16 @@ body {
 
 .team-logo-large {
   width: 100px;
-  height: 100px;
-  display: block;
-  margin: 0 auto;
+  height: auto;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+.team-logo-small {
+  width: 50px;
+  height: auto;
+  max-height: 50px;
+  object-fit: contain;
 }
 
 .team-name {
@@ -314,9 +321,67 @@ body {
   color: var(--text);
 }
 
+.edition-number {
+  font-weight: bold;
+  color: var(--text);
+}
+
+.form-range {
+  width: 100px;
+  height: 1.5rem;
+  background: linear-gradient(135deg, var(--accent), var(--highlight));
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.form-range::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
 @media (max-width: 768px) {
   .side-panel {
     width: 100%;
     right: -100%;
   }
+}
+
+.btn-toggle-view {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s;
+  border: none;
+}
+
+.btn-timeline-view {
+  background: linear-gradient(135deg, var(--accent), var(--highlight));
+}
+
+.btn-grid-view {
+  background: linear-gradient(135deg, var(--highlight), var(--accent));
+}
+
+.btn-toggle-view:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.text-champion {
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.7), 0 0 20px rgba(251, 191, 36, 0.5);
 }

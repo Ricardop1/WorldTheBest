@@ -112,8 +112,14 @@
             <div class="col-12">
                 <div class="card victory-chart animate-fade-in">
                     <div class="card-body">
-                        <h3 class="card-title mb-4">Champions Timeline</h3>
+                        <h3 class="card-title mb-4 text-champion">Champions Timeline</h3>
+                        <div class="d-flex justify-content-end mb-3">
+                            <button id="viewToggleButton" class="btn btn-toggle-view btn-timeline-view" onclick="toggleView()">Switch to Grid View</button>
+                        </div>
                         <canvas id="timelineCanvas" width="1200" height="200"></canvas>
+                        <div id="gridView" class="d-none">
+                            <div class="row" id="gridContainer"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -333,6 +339,45 @@
 
         // Initial draw
         animate();
+
+        function toggleView() {
+            const isChecked = document.getElementById('timelineCanvas').classList.toggle('d-none');
+            document.getElementById('gridView').classList.toggle('d-none', !isChecked);
+            const button = document.getElementById('viewToggleButton');
+            if (isChecked) {
+                button.textContent = 'Switch to Timeline View';
+                button.classList.add('btn-grid-view');
+                button.classList.remove('btn-timeline-view');
+                renderGridView();
+            } else {
+                button.textContent = 'Switch to Grid View';
+                button.classList.add('btn-timeline-view');
+                button.classList.remove('btn-grid-view');
+            }
+        }
+
+        function renderGridView() {
+            const gridContainer = document.getElementById('gridContainer');
+            gridContainer.innerHTML = '';
+            const columns = 10; // Number of champions per row
+            let row;
+            editions.forEach((edition, index) => {
+                if (index % columns === 0) {
+                    row = document.createElement('div');
+                    row.className = 'row mb-3';
+                    gridContainer.appendChild(row);
+                }
+                const col = document.createElement('div');
+                col.className = 'col text-center';
+                col.innerHTML = `
+                    <div class="edition-number mb-2 text-champion">Edition ${edition}</div>
+                    <div class="team-logo-container">
+                        <img src="${logoPath}${winners[index]}.png" alt="${winners[index]} logo" class="team-logo-small">
+                    </div>
+                `;
+                row.appendChild(col);
+            });
+        }
 
         // Initialize Victory Chart
         const victoryData = {{ cumulative_victories|tojson }};
