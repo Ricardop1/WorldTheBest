@@ -3,148 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Dashboard</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Football Tournament Stats</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Sidebar for teams grouped by league -->
-        <aside class="sidebar">
-            <h2>Participating Teams</h2>
-            {% for league, teams in teams_by_league.items() %}
-            <div class="league-group">
-                <h3>
-                    {{ league }}
-                    <button class="select-button" onclick="selectTeam('{{ league }}')">Draw Team</button>
-                </h3>
-                <ul id="league-{{ league }}" class="league-list">
-                    {% for team in teams %}
-                    <li>{{ team }}</li>
-                    {% endfor %}
-                </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: var(--primary)">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <span class="me-2">⚽</span>Tournament Stats
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <div class="row-limit-selector">
+                    <label class="text-light me-2">Show rows:</label>
+                    <select class="form-select form-select-sm" id="rowLimit" onchange="updateTables()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="all">All</option>
+                    </select>
+                </div>
+                <button class="toggle-drawer ms-auto" onclick="toggleDrawer()">
+                    Draw Team <span class="ms-2">🎲</span>
+                </button>
             </div>
-            {% endfor %}
-        </aside>
+        </div>
+    </nav>
 
-        <!-- Main content -->
-        <main class="main-content">
-            <header>
-                <h1>World The Best</h1>
-            </header>
-
-            <section class="tables">
-                <div class="table-container">
-                    <h2>Victories by Team</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Team</th>
-                                <th>Victories</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in equipo_counts %}
-                            <tr>
-                                <td>{{ row['equipo'] }}</td>
-                                <td>{{ row['victories'] }} 🏆</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="table-container">
-                    <h2>Victories by Coach</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Coach</th>
-                                <th>Victories</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in entrenador_counts %}
-                            <tr>
-                                <td>{{ row['entrenador'] }}</td>
-                                <td>{{ row['victories'] }} 🏆</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="chart">
-                <h2>Cumulative Victories by Coach</h2>
-                <canvas id="cumulativeChart"></canvas>
-            </section>
-        </main>
+    <!-- Side Panel for Team Drawing -->
+    <div class="side-panel" id="drawerPanel">
+        <button class="close-panel" onclick="toggleDrawer()">×</button>
+        <h2 class="mb-4">Draw Your Team</h2>
+        <div class="mb-4">
+            <select class="form-select mb-3" id="leagueSelect">
+                <option value="">Select a League</option>
+                {% for league in teams_by_league.keys() %}
+                <option value="{{ league }}">{{ league }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-draw w-100" onclick="drawTeam()">Draw Team</button>
+        </div>
+        <div id="selectedTeam" class="selected-team-result text-center"></div>
     </div>
+
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Team Stats Card -->
+            <div class="col-md-6">
+                <div class="card animate-fade-in">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Team Statistics</h3>
+                        <div class="stats-table">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <th>Victories</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamStatsBody">
+                                    {% for team in equipo_counts %}
+                                    <tr class="stat-row">
+                                        <td>{{ team.equipo }}</td>
+                                        <td>{{ team.victories }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach Stats Card -->
+            <div class="col-md-6">
+                <div class="card animate-fade-in">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Coach Statistics</h3>
+                        <div class="stats-table">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Coach</th>
+                                        <th>Victories</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coachStatsBody">
+                                    {% for coach in entrenador_counts %}
+                                    <tr class="stat-row">
+                                        <td>{{ coach.entrenador }}</td>
+                                        <td>{{ coach.victories }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Chart -->
+            <div class="col-12">
+                <div class="card victory-chart animate-fade-in">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Champions Timeline</h3>
+                        <canvas id="timelineCanvas" width="1200" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Victory Progression Chart -->
+            <div class="col-12">
+                <div class="card victory-chart animate-fade-in">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Victory Progression</h3>
+                        <canvas id="victoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function to select a random team from a league
-        async function selectTeam(league) {
-            try {
-                const response = await fetch('/select-team', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ league })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.team) {
-                    alert(`⭐⭐Selected Team: ${data.team}⭐⭐`);
-                    // Highlight the selected team
-                    const leagueList = document.getElementById(`league-${league}`);
-                    const items = leagueList.querySelectorAll('li');
-                    items.forEach(item => {
-                        item.classList.remove('highlight');
-                        if (item.textContent === data.team) {
-                            item.classList.add('highlight');
-                        }
-                    });
-                } else {
-                    alert(data.error || 'Could not select a team.');
-                }
-            } catch (error) {
-                alert('Error selecting a team. Please try again.');
-            }
+        function toggleDrawer() {
+            const panel = document.getElementById('drawerPanel');
+            panel.classList.toggle('active');
         }
-    </script>
-    <script>
-        // Data passed from Flask
-        const cumulativeVictoriesData = {{ cumulative_victories | tojson }};
-        
-        // Process data for Chart.js
-        const labels = [...new Set(cumulativeVictoriesData.map(item => item.edicion))].sort((a, b) => a - b);
-        const datasets = [];
 
-        const coaches = [...new Set(cumulativeVictoriesData.map(item => item.entrenador))];
-        coaches.forEach(coach => {
-            const coachData = cumulativeVictoriesData.filter(item => item.entrenador === coach);
-            datasets.push({
-                label: coach,
-                data: labels.map(label => {
-                    const match = coachData.find(item => item.edicion === label);
-                    return match ? match.cumulative_victories : 0;
-                }),
-                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
-                backgroundColor: `hsl(${Math.random() * 360}, 70%, 70%)`,
-                fill: false,
-                tension: 0.3
+        function drawTeam() {
+            const league = document.getElementById('leagueSelect').value;
+            if (!league) return;
+
+            const selectedTeamDiv = document.getElementById('selectedTeam');
+            selectedTeamDiv.classList.remove('team-reveal');
+
+            fetch('/select-team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ league: league })
+            })
+            .then(response => response.json())
+            .then(data => {
+                selectedTeamDiv.innerHTML = data.team ? 
+                    `<div class="team-logo-container">
+                        <img src="${logoPath}${data.team}.png" alt="${data.team} logo" class="team-logo-large">
+                        <div class="team-name">${data.team}</div>
+                    </div>` : 'No team available';
+                selectedTeamDiv.classList.add('team-reveal');
             });
+        }
+
+        function updateTables() {
+            const limit = document.getElementById('rowLimit').value;
+            const maxRows = limit === 'all' ? 999 : parseInt(limit);
+            
+            ['teamStatsBody', 'coachStatsBody'].forEach(tableId => {
+                const rows = document.querySelectorAll(`#${tableId} .stat-row`);
+                rows.forEach((row, index) => {
+                    row.style.display = index < maxRows ? '' : 'none';
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateTables);
+
+        // Timeline interactive variables
+        const timelineData = {{ timeline_data|tojson }};
+        const canvas = document.getElementById('timelineCanvas');
+        const ctx = canvas.getContext('2d');
+        const editions = timelineData.map(d => d.edicion);
+        const winners = timelineData.map(d => d.equipo);
+        const logoPath = '{{ url_for("static", filename="img/") }}';
+        const timelinePositions = [];
+        let hoveredIndex = -1;
+        let animationFrame;
+        let currentPositions = [];
+        let targetPositions = [];
+        
+        // Constants
+        const NORMAL_SIZE = 40;
+        const HOVER_SIZE = 60;
+        const MARGIN = 50;
+        const ANIMATION_SPEED = 0.15;
+        
+        // Preload images
+        const logoImages = {};
+        winners.forEach(team => {
+            const img = new Image();
+            img.src = `${logoPath}${team}.png`;
+            logoImages[team] = img;
         });
 
-        // Render Chart.js chart
-        const ctx = document.getElementById('cumulativeChart').getContext('2d');
-        new Chart(ctx, {
+        function calculatePositions(hovered = -1) {
+            const canvasWidth = canvas.width;
+            const totalEditions = editions.length;
+            const baseStep = (canvasWidth - 2 * MARGIN) / (totalEditions - 1);
+            
+            return editions.map((_, index) => {
+                if (hovered === -1) return MARGIN + index * baseStep;
+                
+                const distance = Math.abs(index - hovered);
+                const spacing = Math.max(0, 2 - distance) * 20; // Reduced spacing near hovered item
+                
+                if (index < hovered) {
+                    return MARGIN + index * baseStep - spacing;
+                } else if (index > hovered) {
+                    return MARGIN + index * baseStep + spacing;
+                }
+                return MARGIN + index * baseStep;
+            });
+        }
+
+        function lerp(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        function animate() {
+            let needsAnimation = false;
+            
+            // Update positions with smooth transition
+            currentPositions = currentPositions.map((pos, i) => {
+                const target = targetPositions[i];
+                const newPos = lerp(pos, target, ANIMATION_SPEED);
+                if (Math.abs(newPos - target) > 0.1) needsAnimation = true;
+                return newPos;
+            });
+
+            // Draw the timeline
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Draw base line
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(MARGIN, canvasHeight / 2);
+            ctx.lineTo(canvasWidth - MARGIN, canvasHeight / 2);
+            ctx.stroke();
+
+            // Draw logos
+            timelinePositions.length = 0;
+            editions.forEach((edition, index) => {
+                const x = currentPositions[index];
+                const y = canvasHeight / 2;
+                timelinePositions.push({x, y});
+                
+                const isHovered = index === hoveredIndex;
+                const size = isHovered ? HOVER_SIZE : NORMAL_SIZE;
+                const verticalOffset = isHovered ? 40 : 20;
+                
+                // Draw team logo
+                const team = winners[index];
+                if (logoImages[team]?.complete) {
+                    ctx.save();
+                    ctx.globalAlpha = isHovered ? 1 : 0.8;
+                    ctx.drawImage(
+                        logoImages[team],
+                        x - size/2,
+                        y - size/2 - verticalOffset,
+                        size,
+                        size
+                    );
+                    ctx.restore();
+                }
+
+                // Draw edition number for hovered item
+                if (isHovered) {
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.font = 'bold 16px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`Edition ${edition}`, x, y + size/2 + 20);
+                }
+            });
+
+            if (needsAnimation) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                animationFrame = null;
+            }
+        }
+
+        function updateTimeline(newHoveredIndex) {
+            hoveredIndex = newHoveredIndex;
+            targetPositions = calculatePositions(hoveredIndex);
+            
+            if (!animationFrame) {
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }
+
+        // Initialize positions
+        currentPositions = calculatePositions();
+        targetPositions = [...currentPositions];
+        
+        canvas.addEventListener('mousemove', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const threshold = 30;
+            
+            let newHoveredIndex = -1;
+            timelinePositions.forEach((pos, index) => {
+                const dx = mouseX - pos.x;
+                const dy = mouseY - pos.y;
+                if (Math.sqrt(dx * dx + dy * dy) < threshold) {
+                    newHoveredIndex = index;
+                }
+            });
+            
+            if (newHoveredIndex !== hoveredIndex) {
+                updateTimeline(newHoveredIndex);
+            }
+        });
+
+        canvas.addEventListener('mouseleave', function() {
+            updateTimeline(-1);
+        });
+
+        // Initial draw
+        animate();
+
+        // Initialize Victory Chart
+        const victoryData = {{ cumulative_victories|tojson }};
+        const coaches = [...new Set(victoryData.map(d => d.entrenador))];
+        const editionsVictory = [...new Set(victoryData.map(d => d.edicion))];
+        const datasets = coaches.map(coach => ({
+            label: coach,
+            data: victoryData.filter(d => d.entrenador === coach)
+                .map(d => d.cumulative_victories),
+            fill: false,
+            tension: 0.4
+        }));
+
+        new Chart(document.getElementById('victoryChart'), {
             type: 'line',
             data: {
-                labels: labels,
-                datasets: datasets
+                labels: editionsVictory,
+                datasets: datasets.map((dataset, index) => ({
+                    ...dataset,
+                    borderColor: [
+                        '#f59e0b',
+                        '#c2410c',
+                        '#fbbf24',
+                        '#ea580c',
+                        '#d97706'
+                    ][index % 5],
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.1)',
+                        'rgba(194, 65, 12, 0.1)',
+                        'rgba(251, 191, 36, 0.1)',
+                        'rgba(234, 88, 12, 0.1)',
+                        'rgba(217, 119, 6, 0.1)'
+                    ][index % 5],
+                    fill: true,
+                    borderWidth: 2
+                }))
             },
             options: {
                 responsive: true,
@@ -152,32 +376,39 @@
                     legend: {
                         position: 'top',
                         labels: {
-                            color: '#fff'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        color: '#fff',
-                        font: {
-                            size: 18
+                            color: '#ffffff',
+                            font: {
+                                family: 'Inter',
+                                size: 12,
+                                weight: '500'
+                            },
+                            padding: 20
                         }
                     }
                 },
                 scales: {
                     x: {
-                        ticks: {
-                            color: '#fff'
-                        },
                         grid: {
-                            color: '#444'
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
                         }
                     },
                     y: {
-                        ticks: {
-                            color: '#fff'
-                        },
                         grid: {
-                            color: '#444'
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#e2e8f0',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
                         }
                     }
                 }

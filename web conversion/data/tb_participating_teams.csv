@@ -1,6 +1,6 @@
 team_name,league
-Real Madrid CF,España
-Atlético de Madrid,España
+Real Madrid,España
+Atlético Madrid,España
 FC Barcelona,España
 FC Porto,Portugal
 SL Benfica,Portugal
@@ -10,7 +10,7 @@ Manchester City,Inglaterra
 Manchester United,Inglaterra
 Liverpool,Inglaterra
 Arsenal,Inglaterra
-Inter,Italia
+Inter Milan,Italia
 Juventus,Italia
 Napoli,Italia
 AC Milan,Italia
@@ -19,7 +19,7 @@ FC Bayern München,Alemania
 Bayer 04 Leverkusen,Alemania
 Olympique Lyonnais,Francia
 Olympique de Marseille,Francia
-Paris Saint-Germain,Francia
+Paris Saint Germain,Francia
 FC Red Bull Salzburg,Others
 Club Brugge,Others
 Shakhtar Donetsk,Others
@@ -32,4 +32,4 @@ Fenerbahçe SK,Others
 Celtic,Others
 Hajduk Split,Others
 SK Slavia Praha,Others
-AEK Athen,Others
+AEK Athens,Others
