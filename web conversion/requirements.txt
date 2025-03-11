@@ -3,3 +3,4 @@ matplotlib
 plotly
 flask
 google-genai
+python-dotenv
