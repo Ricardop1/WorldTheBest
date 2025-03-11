@@ -9,6 +9,8 @@
   --text-light: #e2e8f0;
   --highlight: #c2410c;
   --text-muted: #cbd5e1;
+  --low-color: #4ade80;
+  --patrick-color: #818cf8;
 }
 
 body {
@@ -30,6 +32,7 @@ body {
   backdrop-filter: blur(10px);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
 }
 
 .card:hover {
@@ -203,7 +206,7 @@ body {
 
 .table-hover tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05) !important;
-  color: var(--text) !important;
+  color: var (--text) !important;
 }
 
 /* Side Panel Styles */
@@ -285,6 +288,9 @@ body {
 }
 
 .timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -384,4 +390,582 @@ body {
 .text-champion {
   color: var(--gold);
   text-shadow: 0 0 10px rgba(251, 191, 36, 0.7), 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--highlight);
+  border-color: var(--highlight);
+}
+
+/* Tournament Creation Styles */
+.form-range {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--secondary);
+}
+
+.form-range::-webkit-slider-thumb {
+    background: var(--accent);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.form-range::-webkit-slider-runnable-track {
+    background: var(--secondary);
+    height: 8px;
+    border-radius: 4px;
+}
+
+.bracket {
+    overflow-x: auto;
+    padding: 20px;
+    background: var(--primary-dark);
+    border-radius: 8px;
+}
+
+/* Step Indicator Styles */
+.steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    padding: 0 2rem;
+}
+
+.steps-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--secondary);
+    z-index: 1;
+}
+
+.step {
+    position: relative;
+    background: var(--primary);
+    color: var(--text-muted);
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    background: var(--accent);
+    color: var(--text);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.step-content {
+    transition: all 0.3s ease;
+    opacity: 1;
+}
+
+.step-content.d-none {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bracket-setup {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.teams-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--secondary);
+    border-radius: 8px;
+    min-height: 80px;
+}
+
+.pool-team {
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: var(--text);
+    border-radius: 4px;
+    cursor: move;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.pool-team:hover {
+    background: var(--accent);
+}
+
+.pool-team.dragging {
+    opacity: 0.5;
+}
+
+.empty-slot {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed var(--accent);
+    color: var(--text-muted);
+}
+
+.drag-over {
+    background: rgba(245, 158, 11, 0.2);
+    border: 2px dashed var(--gold);
+}
+
+/* Group Stage Styles */
+.groups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.group-box {
+    background: var(--secondary);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.group-box h4 {
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.group-teams {
+    min-height: 200px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.group-team {
+    background: var(--primary);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.remove-team {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+}
+
+.remove-team:hover {
+    color: var(--accent);
+}
+
+.groups-info {
+    text-align: center;
+    margin: 1rem 0;
+    font-size: 1.1rem;
+}
+
+/* Enhanced Slider Styles */
+.slider-container {
+    position: relative;
+    padding: 1rem 0;
+}
+
+.custom-range {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, var(--accent), var(--highlight));
+    -webkit-appearance: none;
+}
+
+.custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--text);
+    cursor: pointer;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    transition: all 0.2s;
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Team Selection Styles */
+.team-slot {
+    background: var(--secondary);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    height: 140px;
+    display: flex;
+    align-items: center;
+}
+
+.team-slot:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+
+.team-slot-content {
+    text-align: center;
+    width: 100%;
+}
+
+.team-slot-empty {
+    color: var(--text-muted);
+}
+
+.team-slot-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.team-slot-selected {
+    width: 100%;
+}
+
+.team-slot-selected img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+
+.team-slot-selected .team-name {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+}
+
+.modal-header {
+    border-bottom-color: var(--accent);
+}
+
+.modal-title {
+    color: var(--text);
+}
+
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.team-card {
+    background: var(--primary);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: auto;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.team-card:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+.team-image-container {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.team-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.team-card .team-name {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Remove or comment out the coach-name styles since we're not showing it anymore */
+.team-card .coach-name {
+    display: none;
+}
+
+.team-card span {
+    display: block;
+    color: var(--text);
+    font-size: 0.9rem;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.team-card .coach-name {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.team-card[data-default-coach]:not([data-default-coach="Unknown"]) {
+    border: 1px solid var(--accent);
+}
+
+.team-filter .form-control {
+    background: var(--primary);
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+.team-filter .form-control:focus {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.team-image-container {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 64px;
+}
+
+.team-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.team-image-container img.default-logo {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.btn-close-white {
+    filter: brightness(0) invert(1);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 1rem 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Improved scrollbar for teams grid */
+.teams-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.teams-grid::-webkit-scrollbar-track {
+    background: var(--secondary);
+    border-radius: 4px;
+}
+
+.teams-grid::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+.teams-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--highlight);
+}
+
+.btn-predict {
+    min-width: 120px;
+    position: relative;
+}
+
+.btn-predict:disabled {
+    background-color: var(--highlight);
+    cursor: not-allowed;
+}
+
+.btn-predict .spinner-border {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.coach-label {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.coach-selection .btn-group {
+    gap: 1rem;
+}
+
+.coach-selection .btn {
+    flex: 1;
+    border-radius: 8px !important;
+}
+
+.coach-selection .btn[data-coach="low"].active {
+    background-color: var(--low-color);
+    border-color: var(--low-color);
+}
+
+.coach-selection .btn[data-coach="patrick"].active {
+    background-color: var(--patrick-color);
+    border-color: var (--patrick-color);
+}
+
+/* Prediction Result Styles */
+.prediction-card {
+    background: linear-gradient(135deg, var(--primary) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: none;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.prediction-card .card-title {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--accent), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+.prediction-content {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(245, 158, 11, 0.1);
+}
+
+.prediction-text {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.prediction-highlight {
+    color: var(--gold);
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 1rem;
+    background: rgba(251, 191, 36, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.prediction-text strong,
+.prediction-highlight strong {
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.prediction-highlight strong {
+    font-size: 1.3rem;
+    text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+.text-gold {
+    color: var(--gold);
+    font-size: 2rem;
+}
+
+.btn-premium {
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color: var(--text);
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+    color: var(--text);
 }

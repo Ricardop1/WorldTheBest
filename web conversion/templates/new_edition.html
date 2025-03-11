@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .bracket {
+            display: flex;
+            margin: 20px 0;
+        }
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            margin-right: 40px;
+        }
+        .match {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0;
+            background: var(--secondary);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+        }
+        .match::after {
+            content: '';
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            width: 40px;
+            height: 2px;
+            background: var(--accent);
+        }
+        .match-team {
+            padding: 8px;
+            margin: 4px 0;
+            background: var(--primary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .match-team:hover {
+            background: var(--accent);
+        }
+        .match-team.selected {
+            background: var(--accent);
+            color: white;
+        }
+        .slider-container {
+            width: 100%;
+            padding: 20px 0;
+        }
+        .teams-counter {
+            font-size: 24px;
+            color: var(--accent);
+            text-align: center;
+            margin: 10px 0;
+        }
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: var(--primary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .step.active {
+            background: var(--accent);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Create New Edition</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+        </div>
+        <div class="steps-indicator mb-4">
+            <div class="step active" id="step1">1. Select Teams</div>
+            <div class="step" id="step2">2. Choose Format</div>
+            <div class="step" id="step3">3. Set Matchups</div>
+        </div>
+
+        <form method="POST" id="tournamentForm">
+            <!-- Step 1: Team Selection -->
+            <div id="teamsStep" class="step-content">
+                <div class="coaches-section mb-4">
+                    <h4>Coaches</h4>
+                    <div class="d-flex gap-4 mb-3">
+                        <div class="coach-label" style="color: var(--low-color)">
+                            <i class="fas fa-user-tie"></i> Joachim Low
+                        </div>
+                        <div class="coach-label" style="color: var(--patrick-color)">
+                            <i class="fas fa-user-tie"></i> Rick Patrick
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-5">
+                    <label for="num_teams" class="form-label d-flex justify-content-between">
+                        <span>Number of Teams</span>
+                        <span class="teams-counter">8 Teams</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" class="form-range custom-range" id="num_teams" name="num_teams" 
+                               min="2" max="32" step="2" value="8">
+                        <div class="range-labels">
+                            <span>2</span>
+                            <span>8</span>
+                            <span>16</span>
+                            <span>24</span>
+                            <span>32</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-selection-grid mb-4">
+                    <div id="teams_selector" class="row g-4"></div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next</button>
+            </div>
+
+            <!-- Team Selection Modal -->
+            <div class="modal fade" id="teamSelectionModal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Select Team</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="coach-selection mb-3">
+                                <label class="form-label">Assign to Coach (Optional):</label>
+                                <div class="btn-group w-100">
+                                    <button type="button" class="btn btn-outline-primary" data-coach="low" onclick="selectCoach('low')">Joachim Low</button>
+                                    <button type="button" class="btn btn-outline-primary" data-coach="patrick" onclick="selectCoach('patrick')">Rick Patrick</button>
+                                    <button type="button" class="btn btn-outline-primary" data-coach="default" onclick="selectCoach('default')">Default Coach</button>
+                                </div>
+                            </div>
+                            <div class="team-filter mb-4">
+                                <input type="text" class="form-control" placeholder="Search teams..." id="teamSearch">
+                            </div>
+                            <div class="teams-grid">
+                                {% for team in teams %}
+                                <div class="team-card" data-team="{{ team }}" data-default-coach="{{ team_coaches.get(team, 'Unknown') }}" onclick="selectTeam(this)">
+                                    <div class="team-image-container">
+                                        <img src="{{ url_for('static', filename='img/' + team + '.png') }}" 
+                                             alt="{{ team }} logo"
+                                             onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/default-team.png') }}'; this.classList.add('default-logo');">
+                                    </div>
+                                    <span class="team-name">{{ team }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Format Selection -->
+            <div id="formatStep" class="step-content d-none">
+                <div class="mb-4">
+                    <label for="tournament_format" class="form-label">Tournament Format</label>
+                    <select class="form-select" id="tournament_format" name="tournament_format" required>
+                        <option value="">Select Format</option>
+                        <option value="Eliminatoria directa">Direct Elimination</option>
+                        <option value="Grupos y eliminatorias">Groups + Elimination</option>
+                        <option value="Liga">League Format</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-secondary me-2" onclick="prevStep(2)">Previous</button>
+                <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next</button>
+            </div>
+
+            <!-- Step 3: Matchups -->
+            <div id="matchupsStep" class="step-content d-none">
+                <div id="bracket_container" class="mb-4">
+                    <h3>Tournament Bracket</h3>
+                    <div class="bracket-setup">
+                        <div class="available-teams mb-4">
+                            <h4>Available Teams</h4>
+                            <div id="teamsPool" class="teams-pool"></div>
+                        </div>
+                        <div id="bracket" class="bracket"></div>
+                    </div>
+                </div>
+                <div id="group_container" class="mb-4 d-none">
+                    <h3>Group Stage Setup</h3>
+                    <div class="mb-4">
+                        <label for="num_groups" class="form-label">Number of Groups</label>
+                        <input type="range" class="form-range" id="num_groups" min="2" max="8" value="2" step="2">
+                        <div class="groups-info text-muted"></div>
+                    </div>
+                    <div id="groups_setup" class="groups-grid"></div>
+                </div>
+                <div id="additional_info"></div>
+                <button type="button" class="btn btn-secondary me-2" onclick="prevStep(3)">Previous</button>
+                <button type="submit" class="btn btn-primary btn-predict">
+                    <span class="predict-text">Predict</span>
+                    <div class="spinner-border spinner-border-sm d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const teamsSlider = document.getElementById('num_teams');
+        const teamsCounter = document.querySelector('.teams-counter');
+        const bracketContainer = document.getElementById('bracket_container');
+        const bracketDiv = document.getElementById('bracket');
+        let selectedTeams = [];
+        let currentCoach = null;
+        const teamAssignments = {};
+        const takenTeams = new Set();
+
+        teamsSlider.addEventListener('input', function() {
+            teamsCounter.textContent = `${this.value} Teams`;
+            updateTeamsSelector();
+            if (document.getElementById('tournament_format').value === 'Eliminatoria directa') {
+                updateBracket();
+            }
+        });
+
+        document.getElementById('tournament_format').addEventListener('change', function() {
+            const format = this.value;
+            bracketContainer.classList.toggle('d-none', format !== 'Eliminatoria directa');
+            if (format === 'Eliminatoria directa') {
+                updateBracket();
+            }
+        });
+
+        function updateTeamsSelector() {
+            const numTeams = parseInt(teamsSlider.value);
+            const container = document.getElementById('teams_selector');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= numTeams; i++) {
+                const teamSlot = document.createElement('div');
+                teamSlot.className = 'col-md-3';
+                teamSlot.innerHTML = `
+                    <div class="team-slot" onclick="openTeamSelection(${i})">
+                        <input type="hidden" name="team_${i}" required>
+                        <div class="team-slot-content">
+                            <div class="team-slot-empty">
+                                <i class="fas fa-plus"></i>
+                                <span>Select Team ${i}</span>
+                            </div>
+                            <div class="team-slot-selected d-none">
+                                <img src="" alt="" class="team-logo">
+                                <span class="team-name"></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(teamSlot);
+            }
+            
+            selectedTeams = Array(numTeams).fill(null);
+        }
+
+        function openTeamSelection(index) {
+            currentTeamIndex = index;
+            const modal = new bootstrap.Modal(document.getElementById('teamSelectionModal'));
+            modal.show();
+        }
+
+        function selectCoach(coach) {
+            currentCoach = coach === 'default' ? null : coach;
+            document.querySelectorAll('.coach-selection .btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.coach === coach);
+            });
+        }
+
+        function selectTeam(element) {
+            const team = element.dataset.team;
+            const defaultCoach = element.dataset.defaultCoach;
+            
+            // Check if team is already taken
+            if (takenTeams.has(team)) {
+                alert('This team is already selected');
+                return;
+            }
+            
+            // Check if selected coach already has a team
+            if (currentCoach) {
+                const coachHasTeam = Object.entries(teamAssignments).some(([t, c]) => c === currentCoach);
+                if (coachHasTeam) {
+                    alert(`${currentCoach === 'low' ? 'Joachim Low' : 'Rick Patrick'} already has a team assigned`);
+                    return;
+                }
+            }
+            
+            const input = document.querySelector(`input[name="team_${currentTeamIndex}"]`);
+            const slot = input.closest('.team-slot');
+            
+            // Store coach assignment and mark team as taken
+            teamAssignments[team] = currentCoach || defaultCoach;
+            takenTeams.add(team);
+            
+            // Update UI with coach color
+            let borderColor;
+            if (currentCoach === 'low') {
+                borderColor = 'var(--low-color)';
+            } else if (currentCoach === 'patrick') {
+                borderColor = 'var(--patrick-color)';
+            } else {
+                borderColor = 'var(--accent)';
+            }
+            slot.style.borderColor = borderColor;
+            
+            input.value = team;
+            const slotContent = slot.querySelector('.team-slot-content');
+            const emptyState = slot.querySelector('.team-slot-empty');
+            const selectedState = slot.querySelector('.team-slot-selected');
+            
+            const teamLogo = selectedState.querySelector('img');
+            teamLogo.src = `{{ url_for('static', filename='img/') }}${team}.png`;
+            teamLogo.onerror = function() {
+                this.onerror = null;
+                this.src = '{{ url_for('static', filename='img/default-team.png') }}';
+                this.classList.add('default-logo');
+            };
+            selectedState.querySelector('.team-name').textContent = team;
+            
+            emptyState.classList.add('d-none');
+            selectedState.classList.remove('d-none');
+            
+            selectedTeams[currentTeamIndex - 1] = team;
+            
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('teamSelectionModal'));
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            
+            if (document.getElementById('tournament_format').value === 'Eliminatoria directa') {
+                updateBracket();
+            }
+        }
+
+        document.getElementById('teamSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.team-card').forEach(card => {
+                const teamName = card.dataset.team.toLowerCase();
+                card.style.display = teamName.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        function updateBracket() {
+            const numTeams = parseInt(teamsSlider.value);
+            const numRounds = Math.log2(numTeams);
+            bracketDiv.innerHTML = '';
+            
+            // Create teams pool
+            const teamsPool = document.getElementById('teamsPool');
+            teamsPool.innerHTML = '';
+            selectedTeams.forEach(team => {
+                if (team) {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'pool-team';
+                    teamDiv.draggable = true;
+                    teamDiv.dataset.team = team;
+                    teamDiv.textContent = team;
+                    
+                    teamDiv.addEventListener('dragstart', handleDragStart);
+                    teamsPool.appendChild(teamDiv);
+                }
+            });
+            
+            // Create rounds
+            for (let round = 0; round < numRounds; round++) {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'round';
+                const matchesInRound = Math.pow(2, numRounds - round - 1);
+                
+                // Create matches in each round
+                for (let match = 0; match < matchesInRound; match++) {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'match';
+                    
+                    // Create empty slots for teams
+                    for (let i = 0; i < 2; i++) {
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = 'match-team empty-slot';
+                        slotDiv.textContent = 'Drop team here';
+                        slotDiv.addEventListener('dragover', handleDragOver);
+                        slotDiv.addEventListener('drop', handleDrop);
+                        matchDiv.appendChild(slotDiv);
+                    }
+                    
+                    roundDiv.appendChild(matchDiv);
+                }
+                
+                bracketDiv.appendChild(roundDiv);
+            }
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.team);
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const team = e.dataTransfer.getData('text/plain');
+            const slot = e.currentTarget;
+            
+            // If slot already has a team, return it to the pool
+            if (slot.dataset.team) {
+                returnTeamToPool(slot.dataset.team);
+            }
+            
+            slot.textContent = team;
+            slot.dataset.team = team;
+            slot.classList.remove('empty-slot', 'drag-over');
+            
+            // Remove the team from the pool
+            const poolTeam = document.querySelector(`.pool-team[data-team="${team}"]`);
+            if (poolTeam) {
+                poolTeam.remove();
+            }
+        }
+
+        function returnTeamToPool(team) {
+            takenTeams.delete(team);
+            delete teamAssignments[team];
+            const teamDiv = document.createElement('div');
+            teamDiv.className = 'pool-team';
+            teamDiv.draggable = true;
+            teamDiv.dataset.team = team;
+            teamDiv.textContent = team;
+            teamDiv.addEventListener('dragstart', handleDragStart);
+            document.getElementById('teamsPool').appendChild(teamDiv);
+        }
+
+        function nextStep(currentStep) {
+            if (currentStep === 1) {
+                // Validate team selection
+                const selects = document.querySelectorAll('#teams_selector select');
+                const selectedValues = Array.from(selects).map(select => select.value);
+                if (selectedValues.some(value => !value)) {
+                    alert('Please select all teams');
+                    return;
+                }
+                // Show format selection step
+                document.getElementById('teamsStep').classList.add('d-none');
+                document.getElementById('formatStep').classList.remove('d-none');
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+            } else if (currentStep === 2) {
+                const format = document.getElementById('tournament_format').value;
+                if (!format) {
+                    alert('Please select a tournament format');
+                    return;
+                }
+                // Show matchups step
+                document.getElementById('formatStep').classList.add('d-none');
+                document.getElementById('matchupsStep').classList.remove('d-none');
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.add('active');
+                
+                if (format === 'Eliminatoria directa') {
+                    updateBracket();
+                }
+            }
+        }
+
+        function prevStep(currentStep) {
+            if (currentStep === 2) {
+                document.getElementById('formatStep').classList.add('d-none');
+                document.getElementById('teamsStep').classList.remove('d-none');
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step1').classList.add('active');
+            } else if (currentStep === 3) {
+                document.getElementById('matchupsStep').classList.add('d-none');
+                document.getElementById('formatStep').classList.remove('d-none');
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+            }
+        }
+
+        document.getElementById('tournament_format').addEventListener('change', function() {
+            const format = this.value;
+            const bracketContainer = document.getElementById('bracket_container');
+            const groupContainer = document.getElementById('group_container');
+            const additionalInfo = document.getElementById('additional_info');
+            
+            // Clear previous content
+            bracketContainer.classList.add('d-none');
+            groupContainer.classList.add('d-none');
+            additionalInfo.innerHTML = '';
+
+            if (format === 'Eliminatoria directa') {
+                bracketContainer.classList.remove('d-none');
+                updateBracket();
+            } else if (format === 'Grupos y eliminatorias') {
+                groupContainer.classList.remove('d-none');
+                updateGroups();
+            } else if (format === 'Liga') {
+                additionalInfo.innerHTML = `
+                    <div class="mb-4">
+                        <h3>League Configuration</h3>
+                        <p>Teams will play against each other in round-robin format.</p>
+                    </div>`;
+            }
+        });
+
+        // Add new functions for group handling
+        function updateGroups() {
+            const numGroups = parseInt(document.getElementById('num_groups').value);
+            const numTeams = selectedTeams.length;
+            const teamsPerGroup = Math.floor(numTeams / numGroups);
+            
+            document.querySelector('.groups-info').textContent = 
+                `${numGroups} groups with ${teamsPerGroup} teams each`;
+
+            const groupsSetup = document.getElementById('groups_setup');
+            groupsSetup.innerHTML = '';
+
+            // Create pool of available teams
+            const teamsPool = document.createElement('div');
+            teamsPool.className = 'teams-pool mb-4';
+            selectedTeams.forEach(team => {
+                if (team) {
+                    const teamDiv = document.createElement('div');
+                    teamDiv.className = 'pool-team';
+                    teamDiv.draggable = true;
+                    teamDiv.dataset.team = team;
+                    teamDiv.textContent = team;
+                    teamDiv.addEventListener('dragstart', handleDragStart);
+                    teamsPool.appendChild(teamDiv);
+                }
+            });
+            groupsSetup.appendChild(teamsPool);
+
+            // Create group containers
+            const groupsGrid = document.createElement('div');
+            groupsGrid.className = 'groups-container';
+            
+            for (let i = 0; i < numGroups; i++) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-box';
+                groupDiv.innerHTML = `
+                    <h4>Group ${String.fromCharCode(65 + i)}</h4>
+                    <div class="group-teams" data-group="${i}"></div>
+                `;
+                
+                const groupTeams = groupDiv.querySelector('.group-teams');
+                groupTeams.addEventListener('dragover', handleDragOver);
+                groupTeams.addEventListener('drop', handleGroupDrop);
+                
+                groupsGrid.appendChild(groupDiv);
+            }
+            groupsSetup.appendChild(groupsGrid);
+        }
+
+        function handleGroupDrop(e) {
+            e.preventDefault();
+            const team = e.dataTransfer.getData('text/plain');
+            const groupTeams = e.currentTarget;
+            
+            // Check if team limit for group is reached
+            const teamsPerGroup = Math.floor(selectedTeams.length / parseInt(document.getElementById('num_groups').value));
+            if (groupTeams.children.length >= teamsPerGroup) {
+                return;
+            }
+
+            const teamDiv = document.createElement('div');
+            teamDiv.className = 'group-team';
+            teamDiv.dataset.team = team;
+            teamDiv.textContent = team;
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-team';
+            removeBtn.innerHTML = '×';
+            removeBtn.onclick = () => {
+                teamDiv.remove();
+                returnTeamToPool(team);
+            };
+            teamDiv.appendChild(removeBtn);
+            
+            groupTeams.appendChild(teamDiv);
+            
+            // Remove from pool
+            const poolTeam = document.querySelector(`.pool-team[data-team="${team}"]`);
+            if (poolTeam) {
+                poolTeam.remove();
+            }
+        }
+
+        document.getElementById('num_groups').addEventListener('input', updateGroups);
+
+        // Initial setup
+        let currentTeamIndex = null;
+        updateTeamsSelector();
+
+        document.getElementById('tournamentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = document.querySelector('.btn-predict');
+            const spinner = button.querySelector('.spinner-border');
+            const buttonText = button.querySelector('.predict-text');
+            
+            // Disable button and show loading
+            button.disabled = true;
+            spinner.classList.remove('d-none');
+            buttonText.textContent = 'Predicting...';
+
+            const format = document.getElementById('tournament_format').value;
+            let matchupsData = [];
+
+            if (format === 'Eliminatoria directa') {
+                // Collect bracket matchups
+                const rounds = document.querySelectorAll('.round');
+                rounds.forEach((round, roundIndex) => {
+                    const matches = round.querySelectorAll('.match');
+                    matches.forEach((match, matchIndex) => {
+                        const teams = match.querySelectorAll('.match-team');
+                        if (teams[0].dataset.team && teams[1].dataset.team) {
+                            matchupsData.push({
+                                round: roundIndex + 1,
+                                match: matchIndex + 1,
+                                team1: teams[0].dataset.team,
+                                team2: teams[1].dataset.team
+                            });
+                        }
+                    });
+                });
+            } else if (format === 'Grupos y eliminatorias') {
+                // Collect groups data
+                const groups = document.querySelectorAll('.group-teams');
+                groups.forEach((group, index) => {
+                    const teams = Array.from(group.querySelectorAll('.group-team'))
+                        .map(team => team.dataset.team);
+                    matchupsData.push({
+                        group: String.fromCharCode(65 + index),
+                        teams: teams
+                    });
+                });
+            }
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        format: format,
+                        teams: selectedTeams,
+                        matchups: matchupsData,
+                        teamAssignments: teamAssignments  // Add coach assignments
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+
+                const result = await response.json();
+                window.location.href = result.redirect;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate prediction. Please try again.');
+                
+                // Re-enable button
+                button.disabled = false;
+                spinner.classList.add('d-none');
+                buttonText.textContent = 'Predict';
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

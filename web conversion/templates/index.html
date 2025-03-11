@@ -29,6 +29,7 @@
                         <option value="all">All</option>
                     </select>
                 </div>
+                <a class="btn btn-primary ms-auto" href="{{ url_for('new_edition') }}">Create New Edition</a>
                 <button class="toggle-drawer ms-auto" onclick="toggleDrawer()">
                     Draw Team <span class="ms-2">🎲</span>
                 </button>
@@ -116,7 +117,10 @@
                         <div class="d-flex justify-content-end mb-3">
                             <button id="viewToggleButton" class="btn btn-toggle-view btn-timeline-view" onclick="toggleView()">Switch to Grid View</button>
                         </div>
-                        <canvas id="timelineCanvas" width="1200" height="200"></canvas>
+                        <div class="timeline-container">
+                            <canvas id="timelineCanvas1" width="1200" height="200"></canvas>
+                            <canvas id="timelineCanvas2" width="1200" height="200"></canvas>
+                        </div>
                         <div id="gridView" class="d-none">
                             <div class="row" id="gridContainer"></div>
                         </div>
@@ -184,22 +188,28 @@
 
         // Timeline interactive variables
         const timelineData = {{ timeline_data|tojson }};
-        const canvas = document.getElementById('timelineCanvas');
-        const ctx = canvas.getContext('2d');
+        const canvas1 = document.getElementById('timelineCanvas1');
+        const canvas2 = document.getElementById('timelineCanvas2');
+        const ctx1 = canvas1.getContext('2d');
+        const ctx2 = canvas2.getContext('2d');
         const editions = timelineData.map(d => d.edicion);
         const winners = timelineData.map(d => d.equipo);
         const logoPath = '{{ url_for("static", filename="img/") }}';
-        const timelinePositions = [];
+        const timelinePositions1 = [];
+        const timelinePositions2 = [];
         let hoveredIndex = -1;
         let animationFrame;
-        let currentPositions = [];
-        let targetPositions = [];
+        let currentPositions1 = [];
+        let currentPositions2 = [];
+        let targetPositions1 = [];
+        let targetPositions2 = [];
         
         // Constants
         const NORMAL_SIZE = 40;
         const HOVER_SIZE = 60;
         const MARGIN = 50;
         const ANIMATION_SPEED = 0.15;
+        const MID_INDEX = Math.ceil(editions.length / 2);
         
         // Preload images
         const logoImages = {};
@@ -209,16 +219,19 @@
             logoImages[team] = img;
         });
 
-        function calculatePositions(hovered = -1) {
+        function calculatePositions(canvas, editionsSlice, hovered = -1) {
             const canvasWidth = canvas.width;
-            const totalEditions = editions.length;
-            const baseStep = (canvasWidth - 2 * MARGIN) / (totalEditions - 1);
+            const numEditions = editionsSlice.length;
+            const baseStep = (canvasWidth - 2 * MARGIN) / (Math.max(1, numEditions - 1));
             
-            return editions.map((_, index) => {
+            return editionsSlice.map((_, index) => {
+                // For single item or last item
+                if (numEditions === 1) return canvasWidth / 2;
+                
                 if (hovered === -1) return MARGIN + index * baseStep;
                 
                 const distance = Math.abs(index - hovered);
-                const spacing = Math.max(0, 2 - distance) * 20; // Reduced spacing near hovered item
+                const spacing = Math.max(0, 2 - distance) * 20;
                 
                 if (index < hovered) {
                     return MARGIN + index * baseStep - spacing;
@@ -237,33 +250,48 @@
             let needsAnimation = false;
             
             // Update positions with smooth transition
-            currentPositions = currentPositions.map((pos, i) => {
-                const target = targetPositions[i];
+            currentPositions1 = currentPositions1.map((pos, i) => {
+                const target = targetPositions1[i];
+                const newPos = lerp(pos, target, ANIMATION_SPEED);
+                if (Math.abs(newPos - target) > 0.1) needsAnimation = true;
+                return newPos;
+            });
+
+            currentPositions2 = currentPositions2.map((pos, i) => {
+                const target = targetPositions2[i];
                 const newPos = lerp(pos, target, ANIMATION_SPEED);
                 if (Math.abs(newPos - target) > 0.1) needsAnimation = true;
                 return newPos;
             });
 
             // Draw the timeline
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
+            const canvasWidth = canvas1.width;
+            const canvasHeight = canvas1.height;
             
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx1.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx2.clearRect(0, 0, canvasWidth, canvasHeight);
             
             // Draw base line
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(MARGIN, canvasHeight / 2);
-            ctx.lineTo(canvasWidth - MARGIN, canvasHeight / 2);
-            ctx.stroke();
+            ctx1.strokeStyle = '#f59e0b';
+            ctx1.lineWidth = 2;
+            ctx1.beginPath();
+            ctx1.moveTo(MARGIN, canvasHeight / 2);
+            ctx1.lineTo(canvasWidth - MARGIN, canvasHeight / 2);
+            ctx1.stroke();
+
+            ctx2.strokeStyle = '#f59e0b';
+            ctx2.lineWidth = 2;
+            ctx2.beginPath();
+            ctx2.moveTo(MARGIN, canvasHeight / 2);
+            ctx2.lineTo(canvasWidth - MARGIN, canvasHeight / 2);
+            ctx2.stroke();
 
             // Draw logos
-            timelinePositions.length = 0;
-            editions.forEach((edition, index) => {
-                const x = currentPositions[index];
+            timelinePositions1.length = 0;
+            editions.slice(0, MID_INDEX).forEach((edition, index) => {
+                const x = currentPositions1[index];
                 const y = canvasHeight / 2;
-                timelinePositions.push({x, y});
+                timelinePositions1.push({x, y});
                 
                 const isHovered = index === hoveredIndex;
                 const size = isHovered ? HOVER_SIZE : NORMAL_SIZE;
@@ -272,24 +300,58 @@
                 // Draw team logo
                 const team = winners[index];
                 if (logoImages[team]?.complete) {
-                    ctx.save();
-                    ctx.globalAlpha = isHovered ? 1 : 0.8;
-                    ctx.drawImage(
+                    ctx1.save();
+                    ctx1.globalAlpha = isHovered ? 1 : 0.8;
+                    ctx1.drawImage(
                         logoImages[team],
                         x - size/2,
                         y - size/2 - verticalOffset,
                         size,
                         size
                     );
-                    ctx.restore();
+                    ctx1.restore();
                 }
 
                 // Draw edition number for hovered item
                 if (isHovered) {
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.font = 'bold 16px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`Edition ${edition}`, x, y + size/2 + 20);
+                    ctx1.fillStyle = '#e2e8f0';
+                    ctx1.font = 'bold 16px Inter';
+                    ctx1.textAlign = 'center';
+                    ctx1.fillText(`Edition ${edition}`, x, y + size/2 + 20);
+                }
+            });
+
+            timelinePositions2.length = 0;
+            editions.slice(MID_INDEX).forEach((edition, index) => {
+                const x = currentPositions2[index];
+                const y = canvasHeight / 2;
+                timelinePositions2.push({x, y});
+                
+                const isHovered = index + MID_INDEX === hoveredIndex;
+                const size = isHovered ? HOVER_SIZE : NORMAL_SIZE;
+                const verticalOffset = isHovered ? 40 : 20;
+                
+                // Draw team logo
+                const team = winners[index + MID_INDEX];
+                if (logoImages[team]?.complete) {
+                    ctx2.save();
+                    ctx2.globalAlpha = isHovered ? 1 : 0.8;
+                    ctx2.drawImage(
+                        logoImages[team],
+                        x - size/2,
+                        y - size/2 - verticalOffset,
+                        size,
+                        size
+                    );
+                    ctx2.restore();
+                }
+
+                // Draw edition number for hovered item
+                if (isHovered) {
+                    ctx2.fillStyle = '#e2e8f0';
+                    ctx2.font = 'bold 16px Inter';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText(`Edition ${edition}`, x, y + size/2 + 20);
                 }
             });
 
@@ -302,7 +364,8 @@
 
         function updateTimeline(newHoveredIndex) {
             hoveredIndex = newHoveredIndex;
-            targetPositions = calculatePositions(hoveredIndex);
+            targetPositions1 = calculatePositions(canvas1, editions.slice(0, MID_INDEX), hoveredIndex < MID_INDEX ? hoveredIndex : -1);
+            targetPositions2 = calculatePositions(canvas2, editions.slice(MID_INDEX), hoveredIndex >= MID_INDEX ? hoveredIndex - MID_INDEX : -1);
             
             if (!animationFrame) {
                 animationFrame = requestAnimationFrame(animate);
@@ -310,20 +373,27 @@
         }
 
         // Initialize positions
-        currentPositions = calculatePositions();
-        targetPositions = [...currentPositions];
+        currentPositions1 = calculatePositions(canvas1, editions.slice(0, MID_INDEX));
+        targetPositions1 = [...currentPositions1];
+        currentPositions2 = calculatePositions(canvas2, editions.slice(MID_INDEX));
+        targetPositions2 = [...currentPositions2];
         
-        canvas.addEventListener('mousemove', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            const threshold = 30;
+        canvas1.addEventListener('mousemove', function(e) {
+            const rect = canvas1.getBoundingClientRect();
+            const scaleX = canvas1.width / rect.width;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * (canvas1.height / rect.height);
+            const threshold = NORMAL_SIZE; // Increased threshold for better detection
             
             let newHoveredIndex = -1;
-            timelinePositions.forEach((pos, index) => {
+            let closestDistance = Infinity;
+            
+            timelinePositions1.forEach((pos, index) => {
                 const dx = mouseX - pos.x;
                 const dy = mouseY - pos.y;
-                if (Math.sqrt(dx * dx + dy * dy) < threshold) {
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < threshold && distance < closestDistance) {
+                    closestDistance = distance;
                     newHoveredIndex = index;
                 }
             });
@@ -333,7 +403,36 @@
             }
         });
 
-        canvas.addEventListener('mouseleave', function() {
+        canvas2.addEventListener('mousemove', function(e) {
+            const rect = canvas2.getBoundingClientRect();
+            const scaleX = canvas2.width / rect.width;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * (canvas2.height / rect.height);
+            const threshold = NORMAL_SIZE; // Increased threshold for better detection
+            
+            let newHoveredIndex = -1;
+            let closestDistance = Infinity;
+            
+            timelinePositions2.forEach((pos, index) => {
+                const dx = mouseX - pos.x;
+                const dy = mouseY - pos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < threshold && distance < closestDistance) {
+                    closestDistance = distance;
+                    newHoveredIndex = index + MID_INDEX;
+                }
+            });
+            
+            if (newHoveredIndex !== hoveredIndex) {
+                updateTimeline(newHoveredIndex);
+            }
+        });
+
+        canvas1.addEventListener('mouseleave', function() {
+            updateTimeline(-1);
+        });
+
+        canvas2.addEventListener('mouseleave', function() {
             updateTimeline(-1);
         });
 
@@ -341,7 +440,8 @@
         animate();
 
         function toggleView() {
-            const isChecked = document.getElementById('timelineCanvas').classList.toggle('d-none');
+            const isChecked = document.getElementById('timelineCanvas1').classList.toggle('d-none');
+            document.getElementById('timelineCanvas2').classList.toggle('d-none');
             document.getElementById('gridView').classList.toggle('d-none', !isChecked);
             const button = document.getElementById('viewToggleButton');
             if (isChecked) {
