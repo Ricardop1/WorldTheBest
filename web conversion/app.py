@@ -135,10 +135,9 @@ def predict():
     # Format teams with coach assignments
     teams_with_coaches = [
         f"{team} (Coach: {get_coach_name(team, team_assignments.get(team, None))})" 
-        if team and team_assignments.get(team, None) in ['low', 'patrick'] else team
-        for team in teams
+        for team in teams if team
     ]
-
+    # and team_assignments.get(team, None) in ['low', 'patrick'] else team
     # Format matchups string
     matchups_str = ""
     if format_type == "Eliminatoria directa":
